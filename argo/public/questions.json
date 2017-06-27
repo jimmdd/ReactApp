@@ -1,0 +1,17 @@
+[
+    {
+        "id":1,
+        "question": "how are you",
+        "answer": "fine"
+    },
+    {
+        "id":2,
+        "question": "how's going",
+        "answer": "not bad"
+    },
+    {
+        "id":3,
+        "question": "where are you going",
+        "answer": "middle of no where"
+    }
+]
