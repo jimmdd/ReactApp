@@ -13,6 +13,7 @@ class SurveyBox extends Component {
             questions: [],
             value: '',
             isToggled: false,
+            dbName: 'SurveyTemplate',
         };
     }
     componentWillMount() {
@@ -22,24 +23,27 @@ class SurveyBox extends Component {
     _handleToggle() {
         this.setState({ isToggled: true });
     }
-    
-    //TO-DO AJAX data from server
+
     _getQuestions() {
         return this.state.questions.map((_question) => {
             return <QuestionBox
                 question={_question.question}
                 answer={_question.answer}
-                key={_question.id} />
+                key={_question.id} 
+                dbName = {this.state.dbName}/>
         });
 
     }
+
+    //TO-DO AJAX data from server and package it to json in express
     _fetchQuestions() {
         jQuery.ajax({
             method: 'GET',
             url: this.props.url,
+            dataType: 'jsonp',
             success: (questions) => {
-                console.log(questions)
-                this.setState({ questions })
+                console.log(questions);
+                this.setState({ questions }).bind(this);
             }
         });
     }
@@ -49,7 +53,8 @@ class SurveyBox extends Component {
             const que = {
                 id: this.state.questions.length + 1,
                 question: this.state.value,
-                answer: ''
+                answer: '',
+                dbName: this.state.dbName
             };
             this.setState({ questions: this.state.questions.concat([que]) });
             //add question to database
@@ -68,13 +73,16 @@ class SurveyBox extends Component {
     _handleChange(event) {
         this.setState({ value: event.target.value });
     }
+    //create collection name for db 
+    _handleSurveyTitle() {
+
+    }
 
     render() {
         const questions = this._getQuestions();
         const toggle = this.state.isToggled;
         let title = <label>Create New Survey Questions</label>;
         let submitButton = <button type="submit">Create Question</button>;
-        ;
         let toggleButton = <button type="button" onClick={this._handleToggle}>Create Survey</button>;
         //if button clicked change the view
         if (toggle) {
@@ -88,6 +96,7 @@ class SurveyBox extends Component {
                     {title}
                     <div className="comment-form-fields">
                         <br />
+
                         <textarea placeholder="Write your question here:" value={this.state.value} onChange={this._handleChange.bind(this)} ></textarea>
                     </div>
                     <div>

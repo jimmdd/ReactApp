@@ -3,7 +3,7 @@ const app = express();
 var path = require('path');
 var bodyParser = require('body-parser');
 // var user = require('./routes/user');
-
+var parseUrlencoded = bodyParser.urlencoded({ extended: false});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -48,10 +48,20 @@ MongoClient.connect(url, function(err, database) {
 // })
 // });
 
+ //TO-DO AJAX data from server and package it to json in express
+
 app.get('/',function(req,res){
   console.log("get requrest recieved!")
-  var cursor = db.collection('SurveyTemplate').find();
-  res.jsonp (cursor.toArray());
+  // var dbName = res.body.dbName;
+  db.collection('SurveyTemplate').find()
+  .toArray((err, docs)=>{
+  //   if(err){
+  //   console.log('err');
+  //   res.send('err');
+  // }else{
+    res.jsonp(docs)}
+  //}
+  );
 });
 
 app.post('/',function(req,res){
@@ -59,17 +69,18 @@ app.post('/',function(req,res){
   var id=req.body.id;
   var question=req.body.question;
   var answer = req.body.answer;
+  var dbName = req.body.dbName;
   //adding it to db 
-  db.collection('SurveyTemplate').insertOne(
+  db.collection(dbName).insertOne(
    {
      "id": id,
      "question": question,
      "answer": answer
     }
-
   )
   res.end("yes");
 });
+
 app.listen(3000, function() {
   console.log('listening on 3000')
 });

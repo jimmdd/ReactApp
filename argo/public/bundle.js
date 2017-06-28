@@ -22442,10 +22442,13 @@ var SurveyBox = function (_Component) {
 
         var _this = _possibleConstructorReturn(this, (SurveyBox.__proto__ || Object.getPrototypeOf(SurveyBox)).call(this));
 
+        _this._handleToggle = _this._handleToggle.bind(_this);
+
         _this.state = {
             questions: [],
             value: '',
-            isToggled: false
+            isToggled: false,
+            dbName: 'SurveyTemplate'
         };
         return _this;
     }
@@ -22456,26 +22459,38 @@ var SurveyBox = function (_Component) {
             this._fetchQuestions();
         }
     }, {
+        key: '_handleToggle',
+        value: function _handleToggle() {
+            this.setState({ isToggled: true });
+        }
+    }, {
         key: '_getQuestions',
         value: function _getQuestions() {
+            var _this2 = this;
+
             return this.state.questions.map(function (_question) {
                 return _react2.default.createElement(_QuestionBox2.default, {
                     question: _question.question,
                     answer: _question.answer,
-                    key: _question.id });
+                    key: _question.id,
+                    dbName: _this2.state.dbName });
             });
         }
+
+        //TO-DO AJAX data from server and package it to json in express
+
     }, {
         key: '_fetchQuestions',
         value: function _fetchQuestions() {
-            var _this2 = this;
+            var _this3 = this;
 
             _jquery2.default.ajax({
                 method: 'GET',
                 url: this.props.url,
+                dataType: 'jsonp',
                 success: function success(questions) {
                     console.log(questions);
-                    _this2.setState({ questions: questions });
+                    _this3.setState({ questions: questions }).bind(_this3);
                 }
             });
         }
@@ -22487,7 +22502,8 @@ var SurveyBox = function (_Component) {
                 var que = {
                     id: this.state.questions.length + 1,
                     question: this.state.value,
-                    answer: ''
+                    answer: '',
+                    dbName: this.state.dbName
                 };
                 this.setState({ questions: this.state.questions.concat([que]) });
                 //add question to database
@@ -22510,27 +22526,52 @@ var SurveyBox = function (_Component) {
         value: function _handleChange(event) {
             this.setState({ value: event.target.value });
         }
+        //create collection name for db 
+
     }, {
-        key: '_handleToggle',
-        value: function _handleToggle(event) {
-            console.log(this.state.isToggled);
-            this.setState({ isToggled: true });
-        }
+        key: '_handleSurveyTitle',
+        value: function _handleSurveyTitle() {}
     }, {
         key: 'render',
         value: function render() {
             var questions = this._getQuestions();
+            var toggle = this.state.isToggled;
+            var title = _react2.default.createElement(
+                'label',
+                null,
+                'Create New Survey Questions'
+            );
+            var submitButton = _react2.default.createElement(
+                'button',
+                { type: 'submit' },
+                'Create Question'
+            );
+            var toggleButton = _react2.default.createElement(
+                'button',
+                { type: 'button', onClick: this._handleToggle },
+                'Create Survey'
+            );
+            //if button clicked change the view
+            if (toggle) {
+                submitButton = _react2.default.createElement(
+                    'button',
+                    { type: 'submit' },
+                    'Finish Survey'
+                );
+                toggleButton = null;
+                title = _react2.default.createElement(
+                    'label',
+                    null,
+                    'Please take this Survey'
+                );
+            }
             return _react2.default.createElement(
                 'div',
                 { className: 'survey-container' },
                 _react2.default.createElement(
                     'form',
                     { onSubmit: this._handleSubmit.bind(this) },
-                    _react2.default.createElement(
-                        'label',
-                        null,
-                        'Create New Survey Questions'
-                    ),
+                    title,
                     _react2.default.createElement(
                         'div',
                         { className: 'comment-form-fields' },
@@ -22540,21 +22581,13 @@ var SurveyBox = function (_Component) {
                     _react2.default.createElement(
                         'div',
                         null,
-                        _react2.default.createElement(
-                            'button',
-                            { type: 'submit' },
-                            'Create Question'
-                        )
+                        submitButton
                     )
                 ),
                 _react2.default.createElement(
                     'div',
                     null,
-                    _react2.default.createElement(
-                        'button',
-                        { type: 'submit' },
-                        'Create Survey'
-                    )
+                    toggleButton
                 ),
                 _react2.default.createElement(
                     'div',
