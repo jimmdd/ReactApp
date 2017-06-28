@@ -40,31 +40,41 @@ MongoClient.connect(url, function(err, database) {
   
   //db.close();
 });
-//get question from database
-// app.get('/', (req, res) => {
-//   var cursor = db.collection('question').find().toArray(function(err, results) {
-//   console.log(results)
-//   // send HTML file populated with quotes here
-// })
-// });
 
- //TO-DO AJAX data from server and package it to json in express
-
-app.get('/',function(req,res){
-  console.log("get requrest recieved!")
-  // var dbName = res.body.dbName;
-  db.collection('SurveyTemplate').find()
+//get sample questions when start
+app.get('/api/questions/get',function(req,res){
+  console.log("questions/get requrest recieved!");
+  var dbName = res.body.dbName;
+  if(dbName==''){
+    dbName = 'SurveyTemplate';
+  }
+  db.collection(dbName).find()
   .toArray((err, docs)=>{
-  //   if(err){
-  //   console.log('err');
-  //   res.send('err');
-  // }else{
+    if(err){
+    console.log('err');
+    res.send('err');
+  }else{
     res.jsonp(docs)}
-  //}
-  );
+  });
 });
 
-app.post('/',function(req,res){
+//get already made surveys
+app.get('/api/surveys/get',function(req,res){
+  console.log("surveys/get requrest recieved!")
+  var dbName = res.body.dbName;
+  db.collection(dbName).find()
+  .toArray((err, docs)=>{
+    if(err){
+    console.log('err');
+    res.send('err');
+  }else{
+    res.jsonp(docs)}
+  });
+});
+
+
+//post questions to the db
+app.post('/api/questions/post',function(req,res){
   console.log("post request recieved!");
   var id=req.body.id;
   var question=req.body.question;

@@ -22452,12 +22452,20 @@ var SurveyBox = function (_Component) {
         };
         return _this;
     }
+    //TO-DO rethink of this and make sure not load it from beginning. load it when user create survey
+
 
     _createClass(SurveyBox, [{
         key: 'componentWillMount',
         value: function componentWillMount() {
             this._fetchQuestions();
         }
+        // make sure user will create the dbName
+        // componentDidMount(){
+        //     //reset the dbName for user to input
+        //     this.setState({dbName: ''});
+        // }
+
     }, {
         key: '_handleToggle',
         value: function _handleToggle() {
@@ -22486,11 +22494,11 @@ var SurveyBox = function (_Component) {
 
             _jquery2.default.ajax({
                 method: 'GET',
-                url: this.props.url,
+                url: this.props.url + 'api/questions/get',
                 dataType: 'jsonp',
                 success: function success(questions) {
                     console.log(questions);
-                    _this3.setState({ questions: questions }).bind(_this3);
+                    _this3.setState({ questions: questions });
                 }
             });
         }
@@ -22509,7 +22517,7 @@ var SurveyBox = function (_Component) {
                 //add question to database
                 _jquery2.default.ajax({
                     method: 'POST',
-                    url: this.props.url,
+                    url: this.props.url + 'api/questions/post',
                     data: que
                 });
             }
@@ -22530,7 +22538,9 @@ var SurveyBox = function (_Component) {
 
     }, {
         key: '_handleSurveyTitle',
-        value: function _handleSurveyTitle() {}
+        value: function _handleSurveyTitle(name) {
+            this.setState({ dbName: name });
+        }
     }, {
         key: 'render',
         value: function render() {
@@ -22568,6 +22578,16 @@ var SurveyBox = function (_Component) {
             return _react2.default.createElement(
                 'div',
                 { className: 'survey-container' },
+                _react2.default.createElement(
+                    'form',
+                    { onSubmit: this._handleSurveyTitle.bind(this) },
+                    _react2.default.createElement('input', { placeholder: 'Write your SurveyTitle Here' }),
+                    _react2.default.createElement(
+                        'button',
+                        { type: 'submit' },
+                        'Submit Title'
+                    )
+                ),
                 _react2.default.createElement(
                     'form',
                     { onSubmit: this._handleSubmit.bind(this) },
