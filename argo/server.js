@@ -9,22 +9,22 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-//error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+// //error handler
+// app.use(function(req, res, next) {
+//   var err = new Error('Not Found');
+//   err.status = 404;
+//   next(err);
+// });
+// // error handler
+// app.use(function(err, req, res, next) {
+//   // set locals, only providing error in development
+//   res.locals.message = err.message;
+//   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
+//   // render the error page
+//   res.status(err.status || 500);
+//   res.render('error');
+// });
 
 //connect to mlab for data access
 var MongoClient = require('mongodb').MongoClient, assert = require('assert');
@@ -48,11 +48,14 @@ MongoClient.connect(url, function(err, database) {
 // })
 // });
 
-app.listen(3000, function() {
-  console.log('listening on 3000')
+app.get('/',function(req,res){
+  console.log("get requrest recieved!")
+  var cursor = db.collection('SurveyTemplate').find();
+  res.jsonp (cursor.toArray());
 });
+
 app.post('/',function(req,res){
-  console.log("request recieved!");
+  console.log("post request recieved!");
   var id=req.body.id;
   var question=req.body.question;
   var answer = req.body.answer;
@@ -66,5 +69,8 @@ app.post('/',function(req,res){
 
   )
   res.end("yes");
+});
+app.listen(3000, function() {
+  console.log('listening on 3000')
 });
 module.exports = app;

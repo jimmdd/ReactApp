@@ -9773,7 +9773,7 @@ var _SurveyBox2 = _interopRequireDefault(_SurveyBox);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-_reactDom2.default.render(_react2.default.createElement(_SurveyBox2.default, { url: 'http://localhost:3000' }), document.getElementById('root'));
+_reactDom2.default.render(_react2.default.createElement(_SurveyBox2.default, { url: 'http://localhost:3000/' }), document.getElementById('root'));
 
 /***/ }),
 /* 83 */
@@ -22472,7 +22472,7 @@ var SurveyBox = function (_Component) {
 
             _jquery2.default.ajax({
                 method: 'GET',
-                url: './questions.json',
+                url: this.props.url,
                 success: function success(questions) {
                     console.log(questions);
                     _this2.setState({ questions: questions });
@@ -22490,7 +22490,7 @@ var SurveyBox = function (_Component) {
                     answer: ''
                 };
                 this.setState({ questions: this.state.questions.concat([que]) });
-                //TO-DO AJAX CALL TO SERVER TO ADD
+                //add question to database
                 _jquery2.default.ajax({
                     method: 'POST',
                     url: this.props.url,

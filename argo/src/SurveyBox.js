@@ -7,15 +7,23 @@ class SurveyBox extends Component {
     constructor() {
         super();
 
+        this._handleToggle = this._handleToggle.bind(this);
+
         this.state = {
             questions: [],
             value: '',
-            isToggled: false
+            isToggled: false,
         };
     }
     componentWillMount() {
         this._fetchQuestions();
     }
+
+    _handleToggle() {
+        this.setState({ isToggled: true });
+    }
+    
+    //TO-DO AJAX data from server
     _getQuestions() {
         return this.state.questions.map((_question) => {
             return <QuestionBox
@@ -28,7 +36,7 @@ class SurveyBox extends Component {
     _fetchQuestions() {
         jQuery.ajax({
             method: 'GET',
-            url: './questions.json',
+            url: this.props.url,
             success: (questions) => {
                 console.log(questions)
                 this.setState({ questions })
@@ -44,12 +52,12 @@ class SurveyBox extends Component {
                 answer: ''
             };
             this.setState({ questions: this.state.questions.concat([que]) });
-            //TO-DO AJAX CALL TO SERVER TO ADD
-           jQuery.ajax({
+            //add question to database
+            jQuery.ajax({
                 method: 'POST',
                 url: this.props.url,
                 data: que,
-                });
+            });
         }
     }
     _handleSubmit(event) {
@@ -60,34 +68,39 @@ class SurveyBox extends Component {
     _handleChange(event) {
         this.setState({ value: event.target.value });
     }
-    _handleToggle(event){
-        console.log(this.state.isToggled);
-        this.setState({isToggled: true})
-    }
+
     render() {
         const questions = this._getQuestions();
+        const toggle = this.state.isToggled;
+        let title = <label>Create New Survey Questions</label>;
+        let submitButton = <button type="submit">Create Question</button>;
+        ;
+        let toggleButton = <button type="button" onClick={this._handleToggle}>Create Survey</button>;
+        //if button clicked change the view
+        if (toggle) {
+            submitButton = <button type="submit">Finish Survey</button>;
+            toggleButton = null;
+            title = <label>Please take this Survey</label>
+        }
         return (
             <div className="survey-container">
                 <form onSubmit={this._handleSubmit.bind(this)}>
-                    <label>Create New Survey Questions</label>
+                    {title}
                     <div className="comment-form-fields">
                         <br />
                         <textarea placeholder="Write your question here:" value={this.state.value} onChange={this._handleChange.bind(this)} ></textarea>
                     </div>
                     <div>
-                        <button type="submit">
-                            Create Question
-                        </button>
+                        {submitButton}
                     </div>
                 </form>
                 <div>
-                    <button type="submit">
-                        Create Survey
-                        </button>
+                    {toggleButton}
                 </div>
                 <div> {questions}</div>
             </div>
         );
     }
 }
+
 export default SurveyBox;
