@@ -9,23 +9,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// //error handler
-// app.use(function(req, res, next) {
-//   var err = new Error('Not Found');
-//   err.status = 404;
-//   next(err);
-// });
-// // error handler
-// app.use(function(err, req, res, next) {
-//   // set locals, only providing error in development
-//   res.locals.message = err.message;
-//   res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-//   // render the error page
-//   res.status(err.status || 500);
-//   res.render('error');
-// });
-
 //connect to mlab for data access
 var MongoClient = require('mongodb').MongoClient, assert = require('assert');
 // Connection URL
@@ -36,9 +19,6 @@ MongoClient.connect(url, function(err, database) {
   assert.equal(null, err);
   db = database;
   console.log("Connected successfully to server");
-  //TO-DO database manipulation
-  
-  //db.close();
 });
 
 //get sample questions when start
@@ -58,10 +38,13 @@ app.get('/api/questions/get',function(req,res){
   });
 });
 
-//get already made surveys
-app.get('/api/surveys/get',function(req,res){
+//get already made surveys TO-DO take specific collections
+app.get('/api/surveys/',function(req,res){
   console.log("surveys/get requrest recieved!")
   var dbName = res.body.dbName;
+  if(dbName==''){
+    dbName = 'SurveyTemplate';
+  }
   db.collection(dbName).find()
   .toArray((err, docs)=>{
     if(err){
@@ -71,7 +54,6 @@ app.get('/api/surveys/get',function(req,res){
     res.jsonp(docs)}
   });
 });
-
 
 //post questions to the db
 app.post('/api/questions/post',function(req,res){

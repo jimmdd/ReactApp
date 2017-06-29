@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import QuestionBox from './QuestionBox';
+import Surveylist from './SurveyList';
+import QuestionList from './QuestionList';
 import jQuery from 'jquery';
 
 class SurveyBox extends Component {
 
     constructor() {
         super();
-
         this._handleToggle = this._handleToggle.bind(this);
 
         this.state = {
@@ -14,17 +15,29 @@ class SurveyBox extends Component {
             value: '',
             isToggled: false,
             isTitled: false,
-            dbName: 'SurveyTemplate',
+            dbName: '',
+            answers: ''
         };
     }
-    //TO-DO rethink of this and make sure not load it from beginning. load it when user create survey
     componentWillMount() {
-        this._fetchQuestions();
+       //parse the url to get dbName and check if it's a survey link
+        let loc = window.location.pathname;
+        let parts = loc.split('/');
+        let name = parts.pop() || parts.pop();
+        let des = '/api/surveys/'+name;
+        if (loc === des) {
+            this._fetchDbName(name);
+        }
     }
     // make sure user will create the dbName
-    componentDidMount(){
-        //reset the dbName for user to input
-        this.setState({dbName: ''});
+    componentDidMount() {
+        //reset the dbName for user to input if survey is not already made
+        if(!this.state.isToggled)
+         this.setState({ dbName: '' });
+    }
+    _fetchDbName(name){
+        this.setState({dbName: name});
+        this.setState({isToggled: true});
     }
     _handleToggle() {
         this.setState({ isToggled: true });
@@ -35,27 +48,48 @@ class SurveyBox extends Component {
             return <QuestionBox
                 question={_question.question}
                 answer={_question.answer}
-                key={_question.id} 
-                dbName = {this.state.dbName}/>
+                key={_question.id}
+                dbName={this.state.dbName} />
         });
-
     }
 
     // AJAX data from server and package it to json in express
-    _fetchQuestions() {
+    // _fetchQuestions() {
+    //     if(this.state.dbName!==null){
+    //     jQuery.ajax({
+    //         method: 'GET',
+    //         url: this.props.url + 'api/questions/get',
+    //         dataType: 'jsonp',
+    //         success: (questions) => {
+    //             console.log(questions);
+    //             this.setState({ questions });
+    //         }
+    //     });
+    //     }
+    // }
+    _fetchSurveys(){
         jQuery.ajax({
             method: 'GET',
-            url: this.props.url+'api/questions/get',
+            url: this.props.url + 'api/surveys/get',
             dataType: 'jsonp',
             success: (questions) => {
-                console.log(questions);
                 this.setState({ questions });
             }
         });
     }
+    _createSurvey() {
+        alert(this.state.questions);
+        if (this.state.questions == null) {
+            alert("Please create questions in the survey!");
+        } else {
+            alert("You are about to take the survey!");
+            this.setState({ isToggled: true });
+            this._fetchSurveys();
+        }
+    }
     _addQuestions() {
-        //if anwer is not empty then add question
-        if (this.state.value !== '') {
+        //if anwer is not empty and dbname is set then add question
+        if (this.state.value !== '' && this.state.dbName !== '') {
             const que = {
                 id: this.state.questions.length + 1,
                 question: this.state.value,
@@ -63,12 +97,34 @@ class SurveyBox extends Component {
                 dbName: this.state.dbName
             };
             this.setState({ questions: this.state.questions.concat([que]) });
-            //add question to database
             jQuery.ajax({
                 method: 'POST',
-                url: this.props.url+'api/questions/post',
+                url: this.props.url + 'api/questions/post',
                 data: que,
             });
+        } else if (this.state.dbName === '') {
+            alert("Please enter a valid survey title first");
+        } else {
+            alert("Please enter a valid question");
+        }
+    }
+    //submit answers by line
+    _addAnswers() {
+        if (this.state.value !== '') {
+            const que = {
+                id: this.state.questions.length + 1,
+                question: this.state.value,
+                answer: this.state.answers,
+                dbName: this.state.dbName
+            };
+            this.setState({ questions: this.state.questions.concat([que]) });
+            jQuery.ajax({
+                method: 'POST',
+                url: this.props.url + 'api/questions/post',
+                data: que,
+            });
+        } else {
+            alert("Please enter a valid question");
         }
     }
     _handleSubmit(event) {
@@ -79,70 +135,61 @@ class SurveyBox extends Component {
     _handleChange(event) {
         this.setState({ value: event.target.value });
     }
-    _handleTitleChange(event){
-        this.setState({dbName: event.target.value});
+    _handleTitleChange(event) {
+        this.setState({ dbName: event.target.value });
+    }
+    _handleAnswerChange(event) {
+        this.setState({ answers: event.target.value });
     }
     //create collection name for db 
     _handleSurveyTitle(event) {
-        console.log(this.state.dbName);
-        this.setState({isTitled: true});
-        this._setSurveyTitle();
+        if (this.state.dbName === '') {
+            alert("Please enter your survey title");
+        } else {
+            this.setState({ isTitled: true });
+            this._setSurveyTitle();
+        }
     }
-    _setSurveyTitle(){
-        if(this.state.isTitled){
-            return(
+    _setSurveyTitle() {
+        if (this.state.isTitled && this.state.dbName !== '') {
+            return (
                 <h3>Survey Name: {this.state.dbName}</h3>
             );
         }
-        else{
-            return(
-                    <form onSubmit={this._handleSurveyTitle.bind(this)}>
-                    <label>Please write your survey title</label><br/>
-                    <input placeholder ="Write your SurveyTitle" value ={this.state.dbName} onChange={this._handleTitleChange.bind(this)}/>
-                    <button type = "submit">Submit Title</button>
-                    </form>);
+        else {
+            return (
+                <form onSubmit={this._handleSurveyTitle.bind(this)}>
+                    <label>Please write your survey title</label><br />
+                    <input placeholder="Write your SurveyTitle" value={this.state.dbName} onChange={this._handleTitleChange.bind(this)} />
+                    <button type="submit">Submit Title</button>
+                </form>);
         }
     }
 
     render() {
-        const questions = this._getQuestions();
         const surveyTitle = this._setSurveyTitle();
-        const toggle = this.state.isToggled;
-        //const titled = this.state.isTitled;
-
-        let title = "Create new survey questions";
-        let submitButton = <button type="submit">Create Question</button>;
-        let toggleButton = <button type="button" onClick={this._handleToggle}>Create Survey</button>;
-        //if button clicked change the view
-
-        if (toggle) {
-            submitButton = <button type="submit">Finish Survey</button>;
-            toggleButton = null;
-            title = "Please take this Survey";
-        }
-        return (
-            <div className="survey-container">
-                {surveyTitle}
-                <form onSubmit={this._handleSubmit.bind(this)}>
-                    <label>{title}</label>
-                    <div className="comment-form-fields">
-                        <br />
-
-                        <textarea placeholder="Write your question here:" value={this.state.value} onChange={this._handleChange.bind(this)} ></textarea>
-                    </div>
-                    <div>
-                        {submitButton}
-                    </div>
-                </form>
-                <div>
-                    {toggleButton}
+        if (!this.state.isToggled) {
+            return (
+                <div className="survey-container">
+                    {surveyTitle}
+                    <Surveylist value={this.state.value}
+                        handlechange={this._handleChange.bind(this)}
+                        isToggled={this.state.isTaggled}
+                        handleSubmit={this._handleSubmit.bind(this)}
+                        createSurvey ={this._createSurvey.bind(this)} 
+                        questions = {this._getQuestions()}
+                        url = {this.props.url}
+                        dbName = {this.state.dbName}/>
                 </div>
-                <div>
-                    <h3>Question List: </h3>
-                     {questions}
-                     </div>
-            </div>
-        );
+            );
+        } else {
+            return (
+                <QuestionList 
+                    url = {this.props.url}
+                    dbName = {this.state.dbName}
+                />
+            );
+        }
     }
 }
 

@@ -1,18 +1,26 @@
 import React, { Component } from 'react';
 
 class QuestionBox extends Component {
-
+constructor(){
+    super();
+    this.state = {
+        value: ''
+    }
+}
+    _handleChange(event) {
+        this.setState({ value: event.target.value });
+    }
     render() {
         return (
             <div>
-                <form>
+                
                     <label>
                         {this.props.question}
                     </label><br/>
                     <label>
-                    <input type="text" name="name" value = '' placeholder ="Write your answer here"/>
+                    <input type="text" name="name" value = '' onChange ={this._handleChange.bind(this)} placeholder ="Write your answer here"/>
                     </label>
-                </form>
+               
             </div>
         );
     }
